@@ -19,37 +19,49 @@
       5. Add a countdown timer - when the time is up, end the quiz, display the score and highlight the correct answers
 *************************** */
 
-window.addEventListener('DOMContentLoaded', () => {
-  const start = document.querySelector('#start');
-  start.addEventListener('click', function (e) {
-    document.querySelector('#quizBlock').style.display = 'block';
-    start.style.display = 'none';
+window.addEventListener("DOMContentLoaded", () => {
+  const start = document.querySelector("#start");
+  start.addEventListener("click", function () {
+    document.querySelector("#quizBlock").style.display = "block";
+    start.style.display = "none";
   });
   // quizArray QUESTIONS & ANSWERS
   // q = QUESTION, o = OPTIONS, a = CORRECT ANSWER
   // Basic ideas from https://code-boxx.com/simple-javascript-quiz/
   const quizArray = [
     {
-      q: 'Which is the third planet from the sun?',
-      o: ['Saturn', 'Earth', 'Pluto', 'Mars'],
+      q: "Which is the third planet from the sun?",
+      o: ["Saturn", "Earth", "Pluto", "Mars"],
       a: 1, // array index 1 - so Earth is the correct answer here
     },
     {
-      q: 'Which is the largest ocean on Earth?',
-      o: ['Atlantic Ocean', 'Indian Ocean', 'Arctic Ocean', 'Pacific Ocean'],
+      q: "Which is the largest ocean on Earth?",
+      o: ["Atlantic Ocean", "Indian Ocean", "Arctic Ocean", "Pacific Ocean"],
       a: 3,
     },
     {
-      q: 'What is the capital of Australia',
-      o: ['Sydney', 'Canberra', 'Melbourne', 'Perth'],
+      q: "What is the capital of Australia",
+      o: ["Sydney", "Canberra", "Melbourne", "Perth"],
       a: 1,
+    },
+    // new question 1
+    {
+      q: "Which is the smallest planet in our solar system?",
+      o: ["Mercury", "Venus", "Mars", "Neptune"],
+      a: 0, // Mercury is correct
+    },
+    // new question 2
+    {
+      q: "Which country is known as the Land of the Rising Sun?",
+      o: ["China", "Japan", "South Korea", "Thailand"],
+      a: 1, // Japan is correct
     },
   ];
 
   // function to Display the quiz questions and answers from the object
   const displayQuiz = () => {
-    const quizWrap = document.querySelector('#quizWrap');
-    let quizDisplay = '';
+    const quizWrap = document.querySelector("#quizWrap");
+    let quizDisplay = "";
     quizArray.map((quizItem, index) => {
       quizDisplay += `<ul class="list-group">
                    Q - ${quizItem.q}
@@ -71,20 +83,83 @@ window.addEventListener('DOMContentLoaded', () => {
         //highlight the li if it is the correct answer
         let li = `li_${index}_${i}`;
         let r = `radio_${index}_${i}`;
-        liElement = document.querySelector('#' + li);
-        radioElement = document.querySelector('#' + r);
+        let liElement = document.querySelector("#" + li);
+        let radioElement = document.querySelector("#" + r);
 
         if (quizItem.a == i) {
           //change background color of li element here
+          liElement.style.backgroundColor = "#90ee90"; // light green
         }
 
-        if (radioElement.checked) {
+        if (radioElement.checked && quizItem.a == i) {
           // code for task 1 goes here
+          score++;
         }
       }
     });
+    return score;
   };
+
+  // Add event listener for submit button
+  document.querySelector("#btnSubmit").addEventListener("click", function () {
+    const score = calculateScore();
+    document.querySelector("#score").innerText = `Your score is: ${score}`;
+  });
 
   // call the displayQuiz function
   displayQuiz();
+
+  // Timer function with Promise
+  function startTimer(duration) {
+    return new Promise((resolve) => {
+      let timeRemaining = duration;
+      const timerDisplay = document.querySelector("#time"); // Display the timer
+
+      const interval = setInterval(() => {
+        const minutes = Math.floor(timeRemaining / 60);
+        const seconds = timeRemaining % 60;
+        timerDisplay.innerText = `${String(minutes).padStart(2, "0")}:${String(
+          seconds
+        ).padStart(2, "0")}`;
+        timeRemaining--;
+        if (timeRemaining < 0) {
+          clearInterval(interval);
+          resolve(); // Resolve when the timer ends
+        }
+      }, 1000);
+    });
+  }
+
+  // Calling timer and handling timeout
+  startTimer(60).then(() => {
+    // Time is up, calculate the score
+    const score = calculateScore();
+    document.querySelector(
+      "#score"
+    ).innerText = `Time's up! Your score is: ${score}`;
+
+    // Disable submit button after time's up
+    document.querySelector("#btnSubmit").disabled = true;
+
+    // Highlight correct answers
+    highlightCorrectAnswers();
+  });
+
+  function highlightCorrectAnswers() {
+    quizArray.map((quizItem, index) => {
+      for (let i = 0; i < 4; i++) {
+        let li = `li_${index}_${i}`;
+        let liElement = document.querySelector("#" + li);
+
+        if (quizItem.a == i) {
+          liElement.style.backgroundColor = "#90ee90"; // lightgreen
+        }
+      }
+    });
+  }
+
+  //reset button to reload the page
+  document.querySelector("#btnReset").addEventListener("click", function () {
+    window.location.reload();
+  });
 });
